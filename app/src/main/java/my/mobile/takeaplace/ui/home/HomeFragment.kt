@@ -1,12 +1,19 @@
 package my.mobile.takeaplace.ui.home
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.mapbox.android.core.location.LocationEngine
@@ -14,12 +21,21 @@ import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.location.LocationEngineRequest
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.annotations.Annotation
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
+import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import my.mobile.takeaplace.R
 import my.mobile.takeaplace.databinding.FragmentHomeBinding
 import my.mobile.takeaplace.lokasi.LocationChangeCallback
@@ -85,7 +101,28 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
         this.mapboxMap.setStyle(Style.TRAFFIC_DAY) {
             enableLocationComponent(it)
         }
+
+        this.mapboxMap.addOnMapLongClickListener { point: LatLng ->
+            addMarker(point)
+            true
+        }
     }
+
+    private fun addMarker(latLng: LatLng){
+        bitmapFromDrawableRes(requireContext(),R.drawable.ic_marker)?.let {
+            val simbolLayer = ArrayList<Feature>()
+            simbolLayer.add(Feature.fromGeometry(Point.fromLngLat(latLng.longitude,latLng.latitude)))
+            mapboxMap.setStyle(
+                Style.Builder().fromUri(Style.TRAFFIC_DAY)
+                    .withImage(ICON_KEY,it)
+                    .withSource(GeoJsonSource(SOURCE_ID, FeatureCollection.fromFeatures(simbolLayer)))
+                    .withLayer(SymbolLayer(LAYER_ID, SOURCE_ID).withProperties(iconImage(ICON_KEY), iconSize(0.4f),
+                        iconAllowOverlap(true), iconIgnorePlacement(true)
+                    ))
+            )
+        }
+    }
+
     @SuppressLint("MissingPermission")
     fun enableLocationComponent(loadedMapStyle: Style){
         if(PermissionsManager.areLocationPermissionsGranted(context)){
@@ -178,5 +215,30 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
     override fun onLowMemory() {
         super.onLowMemory()
         binding.mapView.onLowMemory()
+    }
+
+    private fun bitmapFromDrawableRes(context: Context, @DrawableRes resourceId: Int) = convertDrawableToBitmap(AppCompatResources.getDrawable(context,resourceId))
+
+    private fun convertDrawableToBitmap(sourceDrawable: Drawable?): Bitmap?{
+        if (sourceDrawable == null) return null
+        return if (sourceDrawable is BitmapDrawable){
+            sourceDrawable.bitmap
+        } else {
+            val constantState = sourceDrawable.constantState ?: return null
+            val drawable = constantState.newDrawable().mutate()
+            val bitmap: Bitmap = Bitmap.createBitmap(
+                drawable.intrinsicWidth,drawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0,0,canvas.width,canvas.height)
+            drawable.draw(canvas)
+            bitmap
+        }
+    }
+    companion object{
+        private const val SOURCE_ID = "source-id"
+        private const val LAYER_ID = "layer-id"
+        private const val ICON_KEY = "icon-key"
     }
 }
