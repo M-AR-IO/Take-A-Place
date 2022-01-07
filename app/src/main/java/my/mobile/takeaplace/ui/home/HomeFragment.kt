@@ -28,6 +28,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
     lateinit var mapboxMap: MapboxMap
 
     private lateinit var permissionManager: PermissionsManager
+    private var mintaijinLokasi: Boolean = false
 
     private lateinit var locationEngine: LocationEngine
     private val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
@@ -54,6 +55,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        // jangan minta ijin lokasi jika sudah diijinkan
+        mintaijinLokasi = !PermissionsManager.areLocationPermissionsGranted(context)
+
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync(this)
 
@@ -61,6 +65,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
 //        homeViewModel.text.observe(viewLifecycleOwner, Observer {
 //            textView.text = it
 //        })
+
+
         return root
     }
 
@@ -81,7 +87,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
         }
     }
     @SuppressLint("MissingPermission")
-    private fun enableLocationComponent(loadedMapStyle: Style){
+    fun enableLocationComponent(loadedMapStyle: Style){
         if(PermissionsManager.areLocationPermissionsGranted(context)){
             val locationComponent = mapboxMap.locationComponent
 
@@ -98,9 +104,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
             locationComponent.renderMode = RenderMode.COMPASS
 
             initLocationEngine()
-        }else{
-            permissionManager = PermissionsManager(this)
-            permissionManager.requestLocationPermissions(requireActivity())
+        } else if (mintaijinLokasi){
+//            permissionManager = PermissionsManager(this)
+//            permissionManager.requestLocationPermissions(requireActivity())
         }
     }
     @SuppressLint("MissingPermission")
@@ -114,21 +120,22 @@ class HomeFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
         locationEngine.getLastLocation(callback)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        permissionManager.onRequestPermissionsResult(requestCode,permissions,grantResults)
-    }
+//    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        permissionManager.onRequestPermissionsResult(requestCode,permissions,grantResults)
+//    }
 
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
         Toast.makeText(requireContext(), R.string.user_location_permission_explanation,Toast.LENGTH_LONG).show()
     }
 
     override fun onPermissionResult(granted: Boolean) {
-        if(granted || PermissionsManager.areLocationPermissionsGranted(context)){
-            mapboxMap.getStyle{
-                enableLocationComponent(it)
-            }
-        } else {
+        mintaijinLokasi = false
+        mapboxMap.getStyle{
+            enableLocationComponent(it)
+        }
+
+        if(false) {
             Toast.makeText(requireContext(),R.string.user_location_permission_not_granted,Toast.LENGTH_LONG).show()
 //            finish()
         }

@@ -3,24 +3,24 @@ package my.mobile.takeaplace
 import android.os.Bundle
 import android.view.Menu
 import android.widget.Toast
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.navigation.NavigationView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import my.mobile.takeaplace.databinding.ActivityMainBinding
 import my.mobile.takeaplace.ui.home.HomeFragment
-import my.mobile.takeaplace.R
 
 class MainActivity : AppCompatActivity(), PermissionsListener {
+
+    private lateinit var permissionManager: PermissionsManager
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
@@ -31,8 +31,6 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         requestPermission()
 
         Mapbox.getInstance(this,BuildConfig.MAPBOX_TOKEN)
-
-        setTheme(R.style.Theme_TakeAPlace_NoActionBar)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -72,16 +70,25 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         Toast.makeText(this, R.string.user_location_permission_explanation, Toast.LENGTH_LONG).show()
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        permissionManager.onRequestPermissionsResult(requestCode,permissions,grantResults)
+
+    }
+
     override fun onPermissionResult(granted: Boolean) {
         if(granted){
-            val fragment = supportFragmentManager.findFragmentByTag("fragment_home")
+            val fragment = supportFragmentManager.findFragmentById(R.id.nav_home)
 
-            if (fragment is HomeFragment){
+            if (fragment != null) {
                 val ft = supportFragmentManager.beginTransaction()
                 ft.detach(fragment)
                 ft.attach(fragment)
                 ft.commit()
             }
+
         }else{
             Toast.makeText(this,R.string.user_location_permission_not_granted,Toast.LENGTH_LONG).show()
             requestPermission()
@@ -89,7 +96,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     }
 
     private fun requestPermission(){
-        val permissionManager = PermissionsManager(this)
+        permissionManager = PermissionsManager(this)
         permissionManager.requestLocationPermissions(this)
     }
 }

@@ -1,10 +1,7 @@
 package my.mobile.takeaplace.ui.user
 
+import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.annotation.StringRes
-import androidx.fragment.app.Fragment
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -12,16 +9,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.navArgs
 import my.mobile.takeaplace.MainActivity
-import my.mobile.takeaplace.databinding.FragmentLoginBinding
-
 import my.mobile.takeaplace.R
+import my.mobile.takeaplace.databinding.FragmentLoginBinding
+import my.mobile.takeaplace.util.Pengaturan
 
 class LoginFragment : Fragment() {
 
@@ -50,7 +49,7 @@ class LoginFragment : Fragment() {
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory(requireContext()))
             .get(LoginViewModel::class.java)
 
-        val username = args.username
+        var username = args.username
 
         val usernameEditText = binding.username
         val passwordEditText = binding.password
@@ -58,13 +57,21 @@ class LoginFragment : Fragment() {
         val daftarButton = binding.openSignup
         val loadingProgressBar = binding.loading
 
-        usernameEditText.setText(username)
+        val pengaturan = Pengaturan(requireContext())
+        if (!pengaturan.loggedInUsername.equals("")){
+            if (username == "") username = pengaturan.loggedInUsername ?: ""
+        }
 
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         if (username == ""){
             usernameEditText.requestFocus()
+            imm.showSoftInput(usernameEditText,InputMethodManager.SHOW_IMPLICIT)
         } else {
+            usernameEditText.setText(username)
             passwordEditText.requestFocus()
+            imm.showSoftInput(passwordEditText,InputMethodManager.SHOW_IMPLICIT)
         }
+
 
         loginViewModel.loginFormState.observe(viewLifecycleOwner,
             Observer { loginFormState ->

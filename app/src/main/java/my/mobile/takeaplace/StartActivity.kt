@@ -1,11 +1,8 @@
 package my.mobile.takeaplace
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import my.mobile.takeaplace.databinding.ActivityStartBinding
 
 class StartActivity: AppCompatActivity() {
