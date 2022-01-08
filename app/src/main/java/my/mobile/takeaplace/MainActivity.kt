@@ -16,7 +16,7 @@ import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import my.mobile.takeaplace.databinding.ActivityMainBinding
-import my.mobile.takeaplace.ui.home.HomeFragment
+import my.mobile.takeaplace.ui.home.MapboxFragment
 
 class MainActivity : AppCompatActivity(), PermissionsListener {
 
@@ -80,18 +80,16 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
     override fun onPermissionResult(granted: Boolean) {
         if(granted){
-            val fragment = supportFragmentManager.findFragmentById(R.id.nav_home)
+            val fragmentNav = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)
+            val fragment = fragmentNav!!.childFragmentManager.primaryNavigationFragment
 
-            if (fragment != null) {
-                val ft = supportFragmentManager.beginTransaction()
-                ft.detach(fragment)
-                ft.attach(fragment)
-                ft.commit()
+            if (fragment != null && fragment is MapboxFragment) {
+                fragment.initMapLocationComponent()
+
             }
 
         }else{
             Toast.makeText(this,R.string.user_location_permission_not_granted,Toast.LENGTH_LONG).show()
-            requestPermission()
         }
     }
 
