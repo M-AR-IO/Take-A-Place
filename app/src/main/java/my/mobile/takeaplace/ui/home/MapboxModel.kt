@@ -26,7 +26,7 @@ import my.mobile.takeaplace.R
 import my.mobile.takeaplace.util.Converter
 
 abstract class MapboxModel: Fragment(), OnMapReadyCallback, LocationEngineCallback<LocationEngineResult> {
-    lateinit var mapboxMap: MapboxMap
+    var mapboxMap: MapboxMap? = null
     private val MAP_STYLE = Style.TRAFFIC_DAY
     private val markers = mutableListOf<LatLng>()
 
@@ -54,16 +54,16 @@ abstract class MapboxModel: Fragment(), OnMapReadyCallback, LocationEngineCallba
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         this.mapboxMap = mapboxMap
-        this.mapboxMap.setStyle(MAP_STYLE){
+        this.mapboxMap?.setStyle(MAP_STYLE){
             enableLocationComponent(it)
         }
-        this.mapboxMap.addOnMapLongClickListener { point: LatLng ->
+        this.mapboxMap?.addOnMapLongClickListener { point: LatLng ->
             addMarker(point)
             true
         }
     }
     fun initMapLocationComponent(){
-        mapboxMap.getStyle {
+        mapboxMap?.getStyle {
             enableLocationComponent(it)
         }
     }
@@ -71,7 +71,7 @@ abstract class MapboxModel: Fragment(), OnMapReadyCallback, LocationEngineCallba
     @SuppressLint("MissingPermission")
     protected fun enableLocationComponent(loadedMapStyle: Style){
         if(PermissionsManager.areLocationPermissionsGranted(context)){
-            val locationComponent = mapboxMap.locationComponent
+            val locationComponent = mapboxMap!!.locationComponent
 
             val locationComponentActivationOptions = LocationComponentActivationOptions.builder(requireContext(),loadedMapStyle)
                 .useDefaultLocationEngine(false)
@@ -109,7 +109,7 @@ abstract class MapboxModel: Fragment(), OnMapReadyCallback, LocationEngineCallba
     protected fun addMarker(point: LatLng){
         var maksMarker: Int = MAX_MARKER_TO_SHOW
         if (PermissionsManager.areLocationPermissionsGranted(context)){
-            val lastLocation = mapboxMap.locationComponent.lastKnownLocation
+            val lastLocation = mapboxMap!!.locationComponent.lastKnownLocation
 
             if (lastLocation != null){
                 maksMarker -= 1
@@ -131,7 +131,7 @@ abstract class MapboxModel: Fragment(), OnMapReadyCallback, LocationEngineCallba
                 simbolLayer.add(Feature.fromGeometry(Point.fromLngLat(it.longitude,it.latitude)))
             }
 
-            mapboxMap.setStyle(
+            mapboxMap?.setStyle(
                 Style.Builder().fromUri(MAP_STYLE)
                     .withImage(ICON_KEY,it)
                     .withSource(GeoJsonSource(SOURCE_ID, FeatureCollection.fromFeatures(simbolLayer)))
@@ -151,7 +151,7 @@ abstract class MapboxModel: Fragment(), OnMapReadyCallback, LocationEngineCallba
         val location = result.lastLocation ?: return
 
         if (mapboxMap != null && result.lastLocation != null){
-            mapboxMap.locationComponent.forceLocationUpdate(location)
+            mapboxMap?.locationComponent?.forceLocationUpdate(location)
         }
     }
 

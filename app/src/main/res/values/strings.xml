@@ -28,4 +28,6 @@
     <string name="invalid_password">Password must be more than 6 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="daftar_failed">"Sign up failed"</string>
+    <string name="bottom_sheet_title">Bottom Sheet Title</string>
+    <string name="example_minut_btn_text">23 min</string>
 </resources>

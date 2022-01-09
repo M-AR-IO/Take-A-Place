@@ -1,10 +1,14 @@
 package my.mobile.takeaplace.ui.home
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import my.mobile.takeaplace.MainActivity
 import my.mobile.takeaplace.databinding.FragmentMapboxBinding
 
 class MapboxFragment : MapboxModel() {
@@ -28,6 +32,26 @@ class MapboxFragment : MapboxModel() {
 
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync(this)
+
+
+        val bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.bottomSheetLayout)
+        binding.bottomSheet.bottomSheetArrow.setOnClickListener {
+            if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            } else {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            }
+        }
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                binding.bottomSheet.bottomSheetArrow.rotation = slideOffset * 180
+            }
+
+        })
 
 //        val textView: TextView = binding.textHome
 //        homeViewModel.text.observe(viewLifecycleOwner, Observer {

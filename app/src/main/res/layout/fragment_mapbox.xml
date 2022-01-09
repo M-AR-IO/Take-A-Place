@@ -19,4 +19,9 @@
             app:mapbox_cameraTargetLat="-6.1753924"
             app:mapbox_cameraTargetLng="106.8271528"
             app:mapbox_cameraZoom="12"/>
+    <androidx.coordinatorlayout.widget.CoordinatorLayout android:layout_width="match_parent"
+                                                         android:layout_height="match_parent">
+        <include android:id="@+id/bottom_sheet" layout="@layout/bottom_sheet_dialog_map_layout"/>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
